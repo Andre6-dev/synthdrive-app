@@ -204,8 +204,8 @@ type Query {
     userByEmail(email: String!): User
 
     # Company related queries
-    company(id: ID!): Company
-    companies: [Company!]!
+    getCompany(id: ID!): Company
+    getCompanies: [Company!]!
 
     # Garage related queries
     garage(id: ID!): Garage

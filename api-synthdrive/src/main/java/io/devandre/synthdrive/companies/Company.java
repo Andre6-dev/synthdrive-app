@@ -1,6 +1,7 @@
 package io.devandre.synthdrive.companies;
 
 import io.devandre.synthdrive.shared.persistence.AbstractAuditingEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,12 +11,15 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
-@Getter
+import java.time.Instant;
+
 @Setter
+@Getter
 @Entity
 @Table(name = "companies")
-@Builder
 public class Company extends AbstractAuditingEntity<Long> {
 
     @Id
@@ -30,14 +34,20 @@ public class Company extends AbstractAuditingEntity<Long> {
     private String description;
 
     public Company() {
+        super();
     }
 
-    public Company(Long id, String displayName, String address, String description) {
+    public Company(Long id,
+                   String displayName,
+                   String address,
+                   String description,
+                   Instant createdAt,
+                   Instant updatedAt) {
+        super(createdAt, updatedAt);
         this.id = id;
         this.displayName = displayName;
         this.address = address;
         this.description = description;
     }
-
 
 }

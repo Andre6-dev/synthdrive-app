@@ -50,12 +50,13 @@ public class Slot extends AbstractAuditingEntity<Long> {
 
     public Slot() {}
 
-    public Slot(Long id, String displayName, BigDecimal pricePerHour, Integer length, Integer width, SlotType type, Garage garage) {
+    public Slot(Long id, String displayName, BigDecimal pricePerHour, Integer length, Integer width, Integer height, SlotType type, Garage garage) {
         this.id = id;
         this.displayName = displayName;
         this.pricePerHour = pricePerHour;
         this.length = length;
         this.width = width;
+        this.height = height;
         this.type = type;
         this.garage = garage;
     }

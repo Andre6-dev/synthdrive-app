@@ -13,7 +13,6 @@ public class GraphQLConfig {
         // Register datetime, uuid and bigdecimal scalars
         return runtimeWiring ->
                 runtimeWiring.scalar(ExtendedScalars.DateTime)
-                        .scalar(ExtendedScalars.DateTime)
                         .scalar(ExtendedScalars.UUID)
                         .scalar(ExtendedScalars.GraphQLBigDecimal);
     }
