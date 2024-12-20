@@ -1,0 +1,365 @@
+# schema.graphqls
+scalar DateTime
+scalar UUID
+scalar BigDecimal
+
+enum AuthProviderType {
+    GOOGLE
+    FACEBOOK
+    APPLE
+}
+
+enum SlotType {
+    CAR
+    MOTORCYCLE
+    BICYCLE
+}
+
+enum BookingStatus {
+    BOOKED
+    CONFIRMED
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+type User {
+    id: ID!
+    publicId: UUID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    role: Role!
+    address: String
+    avatarUrl: String
+    isEnabled: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    authProviders: [AuthProvider!]
+}
+
+type Role {
+    id: ID!
+    name: String!
+}
+
+type AuthProvider {
+    id: ID!
+    type: AuthProviderType!
+    user: User!
+}
+
+type Admin {
+    id: ID!
+    displayName: String
+    user: User!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Customer {
+    id: ID!
+    displayName: String
+    user: User!
+    bookings: [Booking!]
+    reviews: [Review!]
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Company {
+    id: ID!
+    displayName: String!
+    address: String
+    description: String
+    managers: [Manager!]
+    garages: [Garage!]
+    valets: [Valet!]
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Manager {
+    id: ID!
+    displayName: String
+    user: User!
+    company: Company!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Valet {
+    id: ID!
+    displayName: String!
+    licenseId: String!
+    user: User!
+    company: Company
+    pickupAssignments: [ValetAssignment!]
+    returnAssignments: [ValetAssignment!]
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Garage {
+    id: ID!
+    displayName: String!
+    description: String
+    images: [String!]
+    company: Company!
+    address: Address
+    slots: [Slot!]
+    reviews: [Review!]
+    verification: Verification
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Address {
+    id: ID!
+    address: String!
+    latitude: Float
+    longitude: Float
+    garage: Garage!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Slot {
+    id: ID!
+    displayName: String
+    pricePerHour: BigDecimal!
+    length: Int
+    width: Int
+    height: Int
+    type: SlotType!
+    garage: Garage!
+    bookings: [Booking!]
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Booking {
+    id: ID!
+    pricePerHour: BigDecimal!
+    totalPrice: BigDecimal!
+    startTime: DateTime!
+    endTime: DateTime!
+    vehicleNumber: String!
+    phoneNumber: String
+    passcode: String
+    status: BookingStatus!
+    slot: Slot!
+    customer: Customer!
+    valetAssignment: ValetAssignment
+    timeline: [BookingTimeline!]
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type ValetAssignment {
+    booking: Booking!
+    pickupLatitude: Float
+    pickupLongitude: Float
+    returnLatitude: Float
+    returnLongitude: Float
+    pickupValet: Valet
+    returnValet: Valet
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type BookingTimeline {
+    id: ID!
+    timestamp: DateTime!
+    status: BookingStatus!
+    booking: Booking!
+    valet: Valet
+    manager: Manager
+}
+
+type Review {
+    id: ID!
+    rating: Int!
+    comment: String
+    customer: Customer!
+    garage: Garage!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Verification {
+    id: ID!
+    verified: Boolean!
+    admin: Admin!
+    garage: Garage!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+# queries.graphqls
+type Query {
+    # User related queries
+    user(id: ID!): User
+    userByPublicId(publicId: UUID!): User
+    userByEmail(email: String!): User
+
+    # Company related queries
+    company(id: ID!): Company
+    companies: [Company!]!
+
+    # Garage related queries
+    garage(id: ID!): Garage
+    garages(companyId: ID): [Garage!]!
+    nearbyGarages(latitude: Float!, longitude: Float!, radius: Float!): [Garage!]!
+
+    # Slot related queries
+    availableSlots(
+        garageId: ID!,
+        startTime: DateTime!,
+        endTime: DateTime!,
+        type: SlotType
+    ): [Slot!]!
+
+    # Booking related queries
+    booking(id: ID!): Booking
+    customerBookings(customerId: ID!): [Booking!]!
+    garageBookings(
+        garageId: ID!,
+        startTime: DateTime,
+        endTime: DateTime
+    ): [Booking!]!
+
+    # Review related queries
+    garageReviews(garageId: ID!): [Review!]!
+
+    # Valet related queries
+    valetAssignments(valetId: ID!): [ValetAssignment!]!
+}
+
+# mutations.graphqls
+type Mutation {
+    # User mutations
+    createUser(input: CreateUserInput!): User!
+    updateUser(id: ID!, input: UpdateUserInput!): User!
+    deleteUser(id: ID!): Boolean!
+
+    # Company mutations
+    createCompany(input: CreateCompanyInput!): Company!
+    updateCompany(id: ID!, input: UpdateCompanyInput!): Company!
+
+    # Garage mutations
+    createGarage(input: CreateGarageInput!): Garage!
+    updateGarage(id: ID!, input: UpdateGarageInput!): Garage!
+    verifyGarage(garageId: ID!, adminId: ID!): Verification!
+
+    # Slot mutations
+    createSlot(input: CreateSlotInput!): Slot!
+    updateSlot(id: ID!, input: UpdateSlotInput!): Slot!
+
+    # Booking mutations
+    createBooking(input: CreateBookingInput!): Booking!
+    updateBookingStatus(id: ID!, status: BookingStatus!): Booking!
+    assignValet(bookingId: ID!, input: AssignValetInput!): ValetAssignment!
+
+    # Review mutations
+    createReview(input: CreateReviewInput!): Review!
+    updateReview(id: ID!, input: UpdateReviewInput!): Review!
+}
+
+# inputs.graphqls
+input CreateUserInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+    roleId: ID!
+    address: String
+    avatarUrl: String
+}
+
+input UpdateUserInput {
+    firstName: String
+    lastName: String
+    address: String
+    avatarUrl: String
+}
+
+input CreateCompanyInput {
+    displayName: String!
+    address: String
+    description: String
+}
+
+input UpdateCompanyInput {
+    displayName: String
+    address: String
+    description: String
+}
+
+input CreateGarageInput {
+    displayName: String!
+    description: String
+    images: [String!]
+    companyId: ID!
+    address: AddressInput!
+}
+
+input UpdateGarageInput {
+    displayName: String
+    description: String
+    images: [String!]
+}
+
+input AddressInput {
+    address: String!
+    latitude: Float
+    longitude: Float
+}
+
+input CreateSlotInput {
+    displayName: String
+    pricePerHour: BigDecimal!
+    length: Int
+    width: Int
+    height: Int
+    type: SlotType!
+    garageId: ID!
+}
+
+input UpdateSlotInput {
+    displayName: String
+    pricePerHour: BigDecimal
+    length: Int
+    width: Int
+    height: Int
+}
+
+input CreateBookingInput {
+    slotId: ID!
+    customerId: ID!
+    startTime: DateTime!
+    endTime: DateTime!
+    vehicleNumber: String!
+    phoneNumber: String
+}
+
+input AssignValetInput {
+    pickupValetId: ID
+    returnValetId: ID
+    pickupLatitude: Float
+    pickupLongitude: Float
+    returnLatitude: Float
+    returnLongitude: Float
+}
+
+input CreateReviewInput {
+    rating: Int!
+    comment: String
+    customerId: ID!
+    garageId: ID!
+}
+
+input UpdateReviewInput {
+    rating: Int
+    comment: String
+}
